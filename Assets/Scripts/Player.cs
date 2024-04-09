@@ -13,8 +13,10 @@ public class Player : MonoBehaviour
     bool wDwon;
     bool jDwon;
     bool isJump;
+    bool isDodge;
 
     Vector3 moveVec;
+    Vector3 dodgeVec;
 
     Rigidbody rigid;
 
@@ -37,6 +39,7 @@ public class Player : MonoBehaviour
         Move();
         turn();
         Jump();
+        Dodge();
     }
     void GetInput()
     {
@@ -48,6 +51,11 @@ public class Player : MonoBehaviour
     void Move()
     {
         moveVec = new Vector3(hAxis, 0, vAxis).normalized;
+
+        if (isDodge)
+        {
+            moveVec = dodgeVec;
+        }
 
         transform.position += moveVec * speed * (wDwon ? 0.3f : 1f) * Time.deltaTime;
 
@@ -61,7 +69,7 @@ public class Player : MonoBehaviour
     }
     void Jump()
     {
-        if (jDwon && !isJump)
+        if (jDwon && moveVec == Vector3.zero && !isJump && !isDodge)
         {
             rigid.AddForce(Vector3.up * JumpPower, ForceMode.Impulse);
             anim.SetBool("isJump", true);
@@ -69,6 +77,25 @@ public class Player : MonoBehaviour
             isJump = true;
         }
 
+    }
+    void Dodge()
+    {
+        if (jDwon && moveVec != Vector3.zero && !isJump && !isDodge)
+        {
+            dodgeVec = moveVec;
+            speed *= 2;
+            anim.SetTrigger("doDodge");
+            isDodge = true;
+
+            Invoke("DodgeOut", 0.4f);
+        }
+
+    }
+
+    void DodgeOut()
+    {
+        speed *= 0.5f;
+        isDodge = false;
     }
     void OnCollisionEnter(Collision collision)
     {
