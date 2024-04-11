@@ -12,6 +12,7 @@ public class Player : MonoBehaviour
     public bool[] hasWeapons;
     public GameObject[] grenades;
     public int hasGrenades;
+    public Camera followCamera;
 
     public int ammo;
     public int coin;
@@ -30,6 +31,7 @@ public class Player : MonoBehaviour
     bool wDwon;
     bool jDown;
     bool fDown;
+    bool rDown;
     bool dDown;
     bool iDown;
     bool sDown1;
@@ -39,7 +41,9 @@ public class Player : MonoBehaviour
     bool isJump;
     bool isDodge;
     bool isSwap;
+    bool isReload;
     bool isFireReady = true;
+    bool isBorder;
 
     Vector3 moveVec;
     Vector3 dodgeVec;
@@ -67,9 +71,10 @@ public class Player : MonoBehaviour
     {
         GetInput();
         Move();
-        turn();
+        Turn();
         Jump();
         Attack();
+        Reload();
         Dodge();
         Interation();
         Swap();
@@ -80,7 +85,8 @@ public class Player : MonoBehaviour
         vAxis = Input.GetAxisRaw("Vertical");
         wDwon = Input.GetButton("Walk");
         jDown = Input.GetButtonDown("Jump");
-        fDown = Input.GetButtonDown("Fire1");
+        fDown = Input.GetButton("Fire1");
+        rDown = Input.GetButtonDown("Reload");
         iDown = Input.GetButtonDown("Interation");
         sDown1 = Input.GetButtonDown("Swap1");
         sDown2 = Input.GetButtonDown("Swap2");
@@ -92,23 +98,36 @@ public class Player : MonoBehaviour
         moveVec = new Vector3(hAxis, 0, vAxis).normalized;
 
         if (isDodge)
-        {
             moveVec = dodgeVec;
-        }
-        if (isSwap || !isFireReady)
-        {
-            moveVec = Vector3.zero;
-        }
 
-        transform.position += moveVec * speed * (wDwon ? 0.3f : 1f) * Time.deltaTime;
+        if (isSwap || isReload || !isFireReady)
+            moveVec = Vector3.zero;
+
+        if(!isBorder)
+            transform.position += moveVec * speed * (wDwon ? 0.3f : 1f) * Time.deltaTime;
+
 
         anim.SetBool("isRun", moveVec != Vector3.zero);
         anim.SetBool("isWalk", wDwon);
     }
-    void turn()
+    void Turn()
     {
+        //키보드에 의한 회전
         transform.LookAt(transform.position + moveVec);
 
+        // 마우스에 의한 회전
+        if (fDown && !isDodge && !isJump)
+        {
+            Ray ray = followCamera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit rayHit;
+            if (Physics.Raycast(ray, out rayHit, 100))
+            {
+                Vector3 nextVec = rayHit.point - transform.position;
+                nextVec.y = 0;
+                transform.LookAt(transform.position + nextVec);
+            }
+        }
+        
     }
     void Jump()
     {
@@ -132,9 +151,35 @@ public class Player : MonoBehaviour
         if(fDown && isFireReady && !isDodge && !isSwap)
         {
             equipWeapon.Use();
-            anim.SetTrigger("doSwing");
+            anim.SetTrigger(equipWeapon.type == Weapons.Type.Melee ? "doSwing" : "doShot");
             fireDelay = 0;
         }
+    }
+    void Reload()
+    {
+        if (equipWeapon == null)
+            return;
+
+        if (equipWeapon.type == Weapons.Type.Melee)
+            return;
+
+        if (ammo == 0)
+            return;
+
+        if(rDown && !isDodge && !isJump && !isSwap && isFireReady)
+        {
+            anim.SetTrigger("doReload");
+            isReload = true;
+
+            Invoke("ReloadOut", 2.3f);
+        }
+    }
+    void ReloadOut()
+    {
+        int reAmmo = ammo < equipWeapon.maxAmmo ? ammo : equipWeapon.maxAmmo;
+        equipWeapon.curAmmo = reAmmo;
+        ammo -= reAmmo;
+        isReload = false;
     }
     void Dodge()
     {
@@ -202,6 +247,21 @@ public class Player : MonoBehaviour
                 Destroy(nearObject);
             }
         }
+    }
+    void FreezeRatarion()
+    {
+        rigid.angularVelocity = Vector3.zero;
+    }
+
+    void StopToWall()
+    {
+        Debug.DrawRay(transform.position, transform.forward * 5, Color.green);
+        isBorder = Physics.Raycast(transform.position, transform.forward, 5, LayerMask.GetMask("Wall"));
+    }
+    void FixedUpdate()
+    {
+        FreezeRatarion();
+        StopToWall();
     }
     void OnCollisionEnter(Collision collision)
     {

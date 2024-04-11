@@ -4999,7 +4999,8 @@ GameObject:
   m_Component:
   - component: {fileID: 9061746766032570386}
   - component: {fileID: 3164985592101115041}
-  - component: {fileID: 3164985592101115040}
+  - component: {fileID: 6276213805449555206}
+  - component: {fileID: 7488409620266349636}
   - component: {fileID: 3164985592101115043}
   m_Layer: 0
   m_Name: Item Ammo
@@ -5042,8 +5043,21 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!136 &3164985592101115040
-CapsuleCollider:
+--- !u!135 &6276213805449555206
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8541668233572962984}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!135 &7488409620266349636
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5052,10 +5066,9 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1
-  m_Radius: 2.71
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0.07, y: 2.34, z: -0.19}
+  serializedVersion: 2
+  m_Radius: 5
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &3164985592101115043
 MonoBehaviour:
   m_ObjectHideFlags: 0
