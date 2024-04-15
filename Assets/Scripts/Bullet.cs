@@ -6,10 +6,11 @@ public class Bullet : MonoBehaviour
 {
     public int damage;
     public bool isMelee;
+    public bool isRock;
 
     void OnCollisionEnter(Collision collision)
     {
-        if(collision.gameObject.tag == "Floor")
+        if(collision.gameObject.tag == "Floor" && !isRock)
         {
             Destroy(gameObject, 3);
         }
