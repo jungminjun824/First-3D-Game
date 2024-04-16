@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
+using UnityEngine.Networking.Types;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 public class Player : MonoBehaviour
@@ -47,6 +48,7 @@ public class Player : MonoBehaviour
     bool isFireReady = true;
     bool isBorder;
     bool isDamgage;
+    bool isShop;
 
     Vector3 moveVec;
     Vector3 dodgeVec;
@@ -179,7 +181,7 @@ public class Player : MonoBehaviour
         fireDelay += Time.deltaTime;
         isFireReady = equipWeapon.rate < fireDelay;
 
-        if(fDown && isFireReady && !isDodge && !isSwap)
+        if(fDown && isFireReady && !isDodge && !isSwap && !isShop)
         {
             equipWeapon.Use();
             anim.SetTrigger(equipWeapon.type == Weapons.Type.Melee ? "doSwing" : "doShot");
@@ -197,7 +199,7 @@ public class Player : MonoBehaviour
         if (ammo == 0)
             return;
 
-        if(rDown && !isDodge && !isJump && !isSwap && isFireReady)
+        if(rDown && !isDodge && !isJump && !isSwap && isFireReady && !isShop)
         {
             anim.SetTrigger("doReload");
             isReload = true;
@@ -214,7 +216,7 @@ public class Player : MonoBehaviour
     }
     void Dodge()
     {
-        if (dDown && moveVec != Vector3.zero && !isJump && !isDodge && !isSwap)
+        if (dDown && moveVec != Vector3.zero && !isJump && !isDodge && !isSwap && !isShop)
         {
             dodgeVec = moveVec;
             speed *= 2;
@@ -277,6 +279,12 @@ public class Player : MonoBehaviour
 
                 Destroy(nearObject);
             }
+            else if (nearObject.tag == "Shop")
+            {
+                Shop shop = nearObject.GetComponent<Shop>();
+                shop.Enter(this);
+                isShop = true;
+            }
         }
     }
     void FreezeRatarion()
@@ -304,10 +312,9 @@ public class Player : MonoBehaviour
     }
     void OnTriggerStay(Collider other)
     {
-        if(other.tag == "Weapon")
+        if(other.tag == "Weapon" || other.tag == "Shop")
         {
             nearObject = other.gameObject;
-            Debug.Log(nearObject.name);
         }
     }
 
@@ -382,6 +389,13 @@ public class Player : MonoBehaviour
     {
         if (other.tag == "Weapon")
         {
+            nearObject = null;
+        }
+        else if(other.tag == "Shop")
+        {
+            Shop shop = nearObject.GetComponent<Shop>();
+            shop.Exit();
+            isShop = false;
             nearObject = null;
         }
     }
