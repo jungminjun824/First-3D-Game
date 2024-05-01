@@ -5082,5 +5082,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 1
-  value: 15
+  value: 50
   RotateSpeed: 25
